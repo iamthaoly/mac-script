@@ -64,9 +64,18 @@ install_brew() {
 
 }
 
+config_gem() {
+    echo 'export GEM_HOME="$HOME/.gem"' >> ~/.bash_profile
+    echo 'export PATH="$GEM_HOME/bin:$PATH"' >> ~/.zshrc
+    
+    source ~/.zshrc
+    source ~/.bash_profile
+}
+
 install_rvm() {
     echo "----------------------"
     echo "2. RVM + Ruby"
+    
     
     if brew list gnupg &>/dev/null; then
         printf ""
@@ -81,6 +90,7 @@ install_rvm() {
     if test ! $(which rvm); then
         echo "rvm's not installed. Installing rvm..."
         \curl -sSL https://get.rvm.io | bash
+        source ~/.rvm/scripts/rvm
     else
         echo "rvm's version:"
         echo $(rvm -v)
@@ -101,6 +111,8 @@ install_rvm() {
         echo ""
     fi
     
+
+    
     # 2.2 Ruby
     echo "Checking ruby 2.6.8"
     list=$(rvm list)
@@ -112,11 +124,10 @@ install_rvm() {
         rvm install 2.6.8
     fi
     
+    #Add gem to PATH to preventing permission issue.
+    config_gem
+    
     echo ""
-#     Check if any ruby existed.
-#     != 2.6.8 -> Install 2.6.8 or latest version
-#     2.6.8 -> Update to latest version
-
 }
 
 install_xcode() {
@@ -139,6 +150,14 @@ install_xcode() {
     if test ! $(which xcode-select); then
         echo "Command line tool's not installed. Installing Command line tool..."
         xcode-select --install
+        
+        echo "Pointing Command line tool to Xcode directory..."
+        echo "This command requires sudo so please enter your password."
+        
+        if echo "$(ls /Applications)" | grep -q "Xcode"; then
+            sudo xcode-select -s "$(xcode-select --print-path)"
+        fi
+        
         go_next
     else
         echo "Command line tool's installed."
@@ -171,17 +190,23 @@ install_jdk() {
     else
         echo "JDK's not installed. Installing JDK..."
         brew install java
-        echo 'export PATH="/usr/local/opt/openjdk/bin:$PATH"' >> ~/.bashrc
+
+        echo "Setting JAVA_HOME"
+        echo 'export PATH="/usr/local/opt/openjdk/bin:$PATH"' >> ~/.bash_profile
         echo 'export PATH="/usr/local/opt/openjdk/bin:$PATH"' >> ~/.zshrc
         
-        echo "Setting JAVA_HOME"
-        echo $"\nexport JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home/\n" >> /Users/$(whoami)/.zshrc
-        echo export "JAVA_HOME=\$(/usr/libexec/java_home)" >> ~/.bash_profile
+        echo $"\nexport JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home/\n" >> ~/.zshrc
+        echo $"\nexport JAVA_HOME=/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home/\n" >> ~/.bash_profile
+        echo 'export JAVA_HOME="\$(/usr/libexec/java_home)"' >> ~/.bash_profile
+        echo 'export JAVA_HOME="\$(/usr/libexec/java_home)"' >> ~/.zshrc
+        
         source ~/.bash_profile
+        source ~/.zshrc
+        
         echo "JAVA_HOME"
         echo "$JAVA_HOME"
         
-        echo "Creating a symbolic link for JDK"
+        echo "Creating a symbolic link for JDK."
         sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
     fi
     
@@ -259,8 +284,6 @@ install_npm() {
     else
         echo "npm's not installed. Installing npm and node latest version..."
         brew install node
-
-
     fi
 }
 
@@ -381,8 +404,8 @@ install_calabash_cucumber() {
 }
     
 install_keystone() {
-    echo "----------------------"
-    echo "x. calabash-android"
+#    echo "----------------------"
+#    echo "x. calabash-android"
     
     if test ! $(which calabash-android); then
         echo "calabash-android's not installed. Installing calabash-android..."
@@ -411,10 +434,16 @@ install_keystone() {
 create_keystone() {
     echo "----------------------"
     echo "10. calabash-android setup"
-    calabash-android setup
+    install_keystone
+    
+    yes | calabash-android setup
+    location=$'{"keystore_location":"~/.android/debug.keystore","keystore_password":"","keystore_alias":""}'
     echo ""
-    # printf " ~/.android/debug.keystore\n\"\"\n\"\"\n" | calabash-android setup
+    echo "Setting the keystore location to ~/.android/debug.keystore"
+    echo "$location" >> .calabash_settings
+    
 }
+
 # MAIN
 
 install_brew
@@ -435,7 +464,6 @@ install_chrome_driver
 go_next
 install_bundler
 go_next
-# install_keystone
 create_keystone
 go_next
 install_calabash_cucumber
