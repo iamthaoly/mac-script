@@ -35,6 +35,12 @@ thanks() {
     echo "Thank you for using the script. Have a nice day! :)"
 }
 
+source_all() {
+    source ~/.bash_profile
+    source ~/.zshrc
+    source ~/.bashrc
+}
+
 install_brew() {
     echo "----------------------"
     echo "1. Homebrew"
@@ -68,8 +74,6 @@ config_gem() {
     echo 'export GEM_HOME="$HOME/.gem"' >> ~/.bash_profile
     echo 'export PATH="$GEM_HOME/bin:$PATH"' >> ~/.zshrc
     
-    source ~/.zshrc
-    source ~/.bash_profile
 }
 
 install_rvm() {
@@ -90,7 +94,12 @@ install_rvm() {
     if test ! $(which rvm); then
         echo "rvm's not installed. Installing rvm..."
         \curl -sSL https://get.rvm.io | bash
-        source ~/.rvm/scripts/rvm
+        
+        echo "source $HOME/.rvm/scripts/rvm" >> ~/.bash_profile
+        echo "source $HOME/.rvm/scripts/rvm" >> ~/.zshrc
+        
+        source_all
+#        source ~/.rvm/scripts/rvm
     else
         echo "rvm's version:"
         echo $(rvm -v)
@@ -151,11 +160,12 @@ install_xcode() {
         echo "Command line tool's not installed. Installing Command line tool..."
         xcode-select --install
         
-        echo "Pointing Command line tool to Xcode directory..."
-        echo "This command requires sudo so please enter your password."
-        
+
         if echo "$(ls /Applications)" | grep -q "Xcode"; then
-            sudo xcode-select -s "$(xcode-select --print-path)"
+            echo "Pointing Command line tool to Xcode directory..."
+            echo "This command requires sudo so please enter your password."
+            sudo xcode-select --reset && sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+            echo ""
         fi
         
         go_next
@@ -292,6 +302,8 @@ install_iosdeploy() {
     echo "7. iOS-deploy"
 
     if test ! $(which ios-deploy); then
+        echo "Check Command line tool:"
+        echo "$(xcode-select -p)"
         echo "ios-deploy's not installed. Installing ios-deploy..."
         npm install -g ios-deploy
     else
