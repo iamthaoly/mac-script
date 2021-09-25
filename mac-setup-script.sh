@@ -80,7 +80,6 @@ install_rvm() {
     echo "----------------------"
     echo "2. RVM + Ruby"
     
-    
     if brew list gnupg &>/dev/null; then
         printf ""
     else
@@ -141,7 +140,7 @@ install_rvm() {
 
 install_xcode_brew() {
     brew install robotsandpencils/made/xcodes
-    echo "Apple requires Apple ID to install Xcode."
+    echo "Apple requires Apple ID to download Xcode."
     xcodes version
     
     echo "All available Xcode versions:"
@@ -172,20 +171,19 @@ install_xcode() {
     if test ! $(which xcode-select); then
         echo "Command line tool's not installed. Installing Command line tool..."
         xcode-select --install
-        
-
-        if echo "$(ls /Applications)" | grep -q "Xcode"; then
-            echo "Pointing Command line tool to Xcode directory..."
-            echo "This command requires sudo so please enter your password."
-            sudo xcode-select --reset && sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
-            echo ""
-        fi
-        
         go_next
     else
         echo "Command line tool's installed."
         xcode-select -version
     fi
+    
+    if echo "$(ls /Applications)" | grep -q "Xcode"; then
+        echo "Pointing Command line tool to Xcode directory..."
+        echo "This command requires sudo so please enter your password."
+        sudo xcode-select --reset && sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+        echo ""
+    fi
+    
     echo ""
 }
 
@@ -280,7 +278,6 @@ install_android() {
         
         source_all
         echo ""
-        go_next
         
     fi
     
@@ -487,7 +484,6 @@ install_brew
 go_next
 install_rvm
 go_next
-install_xcode_brew
 install_xcode
 go_next
 install_jdk
