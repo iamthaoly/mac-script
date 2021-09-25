@@ -133,10 +133,22 @@ install_rvm() {
         rvm install 2.6.8
     fi
     
-    #Add gem to PATH to preventing permission issue.
+    # Add gem to PATH to preventing permission issue.
     config_gem
     
     echo ""
+}
+
+install_xcode_brew() {
+    brew install robotsandpencils/made/xcodes
+    echo "Apple requires Apple ID to install Xcode."
+    xcodes version
+    
+    echo "All available Xcode versions:"
+    xcodes list
+    printf 'Enter a version (ex: 13.0 Beta 5) to install: '
+    read -r input
+    xcodes install "$input"
 }
 
 install_xcode() {
@@ -147,7 +159,8 @@ install_xcode() {
     # 3.1 Xcode
     if test ! $(which xcodebuild); then
         echo "Xcode's not installed. Installing Xcode..."
-        echo "You can visit https://xcodereleases.com to view all version."
+        install_xcode_brew
+#        echo "You can visit https://xcodereleases.com to view all version."
         go_next
     else
         echo "Xcode's installed."
@@ -210,8 +223,9 @@ install_jdk() {
         echo 'export JAVA_HOME="\$(/usr/libexec/java_home)"' >> ~/.bash_profile
         echo 'export JAVA_HOME="\$(/usr/libexec/java_home)"' >> ~/.zshrc
         
-        source ~/.bash_profile
-        source ~/.zshrc
+        source_all
+#        source ~/.bash_profile
+#        source ~/.zshrc
         
         echo "JAVA_HOME"
         echo "$JAVA_HOME"
@@ -235,27 +249,38 @@ install_android() {
     else
         echo "Android Studio's not installed. Installing Android Studio..."
         echo ""
-        go_next
+        
+        brew install --cask android-studio
+        brew install gradle
+        
+        echo 'export GRADLE_HOME="/usr/local/opt/gradle"' >> ~/.bash_profile
+        echo 'export PATH="GRADLE_HOME/bin:$PATH"' >> ~/.bash_profile
+        echo 'export GRADLE_HOME="/usr/local/opt/gradle"' >> ~/.zshrc
+        echo 'export PATH="GRADLE_HOME/bin:$PATH"' >> ~/.zshrc
+        source_all
+        
+        brew install --cask android-platform-tools
+        brew install android-sdk
+        
+        # Export paths
         # echo "Installing Android JDK..."
         # echo "android-sdk requires Java 8"
         # brew install --cask homebrew/cask-versions/adoptopenjdk8
         # echo $"\nexport JAVA_HOME=/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home/\n" >> /Users/$(whoami)/.zshrc
         # source ~/.zshrc
-
-        # brew install --cask android-platform-tools
-        # brew install android-sdk
                 
         echo "Setting ANDROID_HOME"
-        echo 'export "ANDROID_HOME=$HOME/Library/Andorid/sdk"' >> ~/.bash_profile
+        echo 'export "ANDROID_HOME=$HOME/Library/Android/sdk"' >> ~/.bash_profile
         echo 'export "PATH=$ANDROID_HOME/tools:$PATH"' >> ~/.bash_profile
-        # echo 'export "PATH=$ANDROID_HOME/platform-tools:$PATH"' >> ~/.bash_profile
-        source ~/.bash_profile
+#        echo 'export "PATH=$ANDROID_HOME/platform-tools:$PATH"' >> ~/.bash_profile
 
-        echo 'export "ANDROID_HOME=$HOME/Library/Andorid/sdk"' >> ~/.zshrc
+        echo 'export "ANDROID_HOME=$HOME/Library/Android/sdk"' >> ~/.zshrc
         echo 'export "PATH=$ANDROID_HOME/tools:$PATH"' >> ~/.zshrc
-        # echo 'export "PATH=$ANDROID_HOME/platform-tools:$PATH"' >> ~/.zshrc
-        source ~/.zshrc
+#        echo 'export "PATH=$ANDROID_HOME/platform-tools:$PATH"' >> ~/.zshrc
         
+        source_all
+        echo ""
+        go_next
         
     fi
     
@@ -302,7 +327,7 @@ install_iosdeploy() {
     echo "7. iOS-deploy"
 
     if test ! $(which ios-deploy); then
-        echo "Check Command line tool:"
+        echo "Checking Command line tool:"
         echo "$(xcode-select -p)"
         echo "ios-deploy's not installed. Installing ios-deploy..."
         npm install -g ios-deploy
@@ -458,25 +483,26 @@ create_keystone() {
 
 # MAIN
 
-install_brew
-go_next
-install_rvm
-go_next
-install_xcode
-go_next
-install_jdk
-go_next
-install_android
-go_next
-install_npm
-go_next
-install_iosdeploy
-go_next
-install_chrome_driver
-go_next
-install_bundler
-go_next
-create_keystone
-go_next
-install_calabash_cucumber
-thanks
+#install_brew
+#go_next
+#install_rvm
+#go_next
+#install_xcode
+#go_next
+#install_jdk
+#go_next
+#install_android
+#go_next
+#install_npm
+#go_next
+#install_iosdeploy
+#go_next
+#install_chrome_driver
+#go_next
+#install_bundler
+#go_next
+#create_keystone
+#go_next
+#install_calabash_cucumber
+#thanks
+install_xcode_brew
